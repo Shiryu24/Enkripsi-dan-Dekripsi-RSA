@@ -1,6 +1,6 @@
 import random
-import os
 import time
+import base64
 
 # Fungsi untuk mencari Greatest Common Divisor (GCD)
 def pbb(a, b):
@@ -59,12 +59,21 @@ def generate_key(p, q):
 def encrypt(en, plaintext):
     e, n = en
     cipher = [(ord(char) ** e) % n for char in plaintext]
-    return cipher
+    # Mengonversi list cipher menjadi string yang dipisahkan koma
+    cipher_string = ','.join(map(str, cipher))
+    # Encode hasil enkripsi ke dalam format Base64
+    cipher_bytes = base64.b64encode(cipher_string.encode('utf-8'))
+    return cipher_bytes.decode('utf-8')
 
 # Fungsi untuk dekripsi
 def decrypt(dn, ciphertext):
     d, n = dn
-    plain = [chr((char ** d) % n) for char in ciphertext]
+    # Decode dari Base64
+    cipher_bytes = base64.b64decode(ciphertext)
+    cipher_string = cipher_bytes.decode('utf-8')
+    # Mengonversi string kembali menjadi list angka
+    cipher = list(map(int, cipher_string.split(',')))
+    plain = [chr((char ** d) % n) for char in cipher]
     return ''.join(plain)
 
 # Fungsi utama program
@@ -81,58 +90,23 @@ def programUtama():
         print("p = ", p)
         print("q = ", q)
         public, private = generate_key(p, q)
-        print("Kunci publik (tidak bersifat rahasia): ", public)
         print("Kunci privat (simpan dengan baik): ", private)
-        print("Pilih input teks :\n 1. File\n 2. Ketik sendiri")
-        pil = int(input("Masukkan pilihan: "))
-        while pil not in [1, 2]:
-            print("Pilihan tidak valid")
-            pil = int(input("Masukkan pilihan: "))
-        if pil == 1:
-            path = os.getcwd()
-            files = os.listdir(path + "\\files")
-            namafile = input("Masukkan nama file yang terletak di folder bernama \"files\": ")
-            while namafile not in files:
-                print("File tidak ditemukan")
-                namafile = input("Masukkan nama file yang terletak di folder bernama \"files\": ")
-            namafile = path + "\\files\\" + namafile
-            with open(namafile, "r") as f:
-                text = f.read()
-            print("Teks yang akan dienkripsi:\n", text)
-        else:
-            text = input("Masukkan teks yang akan dienkripsi:\n")
+        
+        text = input("Masukkan teks yang akan dienkripsi:\n")
         
         # Mengukur waktu enkripsi
         start_time = time.time()
         encrypted_text = encrypt(public, text)
         end_time = time.time()
-        print("Teks hasil enkripsi:\n", ' '.join(str(c) for c in encrypted_text))
+        print("Teks hasil enkripsi:\n", encrypted_text)
         print(f"Waktu yang dibutuhkan untuk enkripsi: {end_time - start_time:.6f} detik")
     
     else:
         d = int(input("Masukkan nilai d (kunci privat (d,n)): "))
         n = int(input("Masukkan nilai n (kunci privat (d,n)): "))
         private = (d, n)
-        pil = int(input("Pilih input teks :\n 1. File\n 2. Ketik sendiri\n Masukkan pilihan: "))
-        while pil not in [1, 2]:
-            print("Pilihan tidak valid")
-            pil = int(input("Masukkan pilihan: "))
-        if pil == 1:
-            path = os.getcwd()
-            files = os.listdir(path + "\\files")
-            namafile = input("Masukkan nama file yang terletak di folder bernama \"files\": ")
-            while namafile not in files:
-                print("File tidak ditemukan")
-                namafile = input("Masukkan nama file yang terletak di folder bernama \"files\": ")
-            namafile = path + "\\files\\" + namafile
-            with open(namafile, "r") as f:
-                encrypted_text = f.read()
-            print("Teks yang akan didekripsi:\n", encrypted_text)
-        else:
-            encrypted_text = input("Masukkan pesan hasil enkripsi: ")
         
-        encrypted_text = encrypted_text.split(' ')
-        encrypted_text = list(map(int, encrypted_text))
+        encrypted_text = input("Masukkan pesan hasil enkripsi: ")
         
         # Mengukur waktu dekripsi
         start_time = time.time()
